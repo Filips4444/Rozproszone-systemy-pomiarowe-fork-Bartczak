@@ -27,6 +27,12 @@ String generateDeviceIdFromEfuse() {
   return String(id);
 }
 
+long long getTimestampMs() {
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  return ((long long)tv.tv_sec * 1000LL) + (tv.tv_usec / 1000);
+}
+
 void connectWiFi() {
   Serial.print("Laczenie z Wi-Fi: ");
   Serial.println(WIFI_SSID);
@@ -62,15 +68,13 @@ void connectMQTT() {
 void publishMeasurement() 
 {
   float  temperature = dht.readTemperature();
-
-
-  if(isnan(temperature))
-  {
+  
+  if(isnan(temperature))  {
     Serial.println("Błąd odczytu temp.");
     return;
   }
 
-  StaticJsonDocument doc;
+  StaticJsonDocument<256> doc;
 
   doc["schema_version"] = 1;
   doc["group_id"] = MQTT_GROUP;
@@ -78,19 +82,20 @@ void publishMeasurement()
   doc["sensor"] = "temperature";
   doc["value"] = temperature;
   doc["unit"] = "C";
-  doc["ts_ms"] = millis();
+  doc["ts_ms"] = getTimestampMS();
 
 
   char payload[256];
-
   serializeJson(doc, payload);
 
   mqttClient.publish(topic.c_str(), payload);
 
-  Serial.print("Publikacja na topic: ");
-  Serial.println(topic);
-  Serial.println(payload);
-
+  if (mqttClient.publish(topic.c_str(), payload)) {
+    Serial.print("Wysłano dane: ");
+    Serial.println(payload);
+  } else {
+    Serial.println("Błąd publikacji MQTT");
+  }
 }
 
 void setup() 
@@ -101,34 +106,26 @@ void setup()
   dht.begin();
 
   deviceId = generateDeviceIdFromEfuse();
-
-  deviceId = generateDeviceIdFromEfuse();
   topic = "lab/" + String(MQTT_GROUP) + "/" + deviceId + "/temperature";
 
-  Serial.print("Device ID: ");
-  Serial.println(deviceId);
+  Serial.print("Device ID: " + deviceId);
+  Serial.println("Topic: " + topic);
 
   connectWiFi();
 
   configTime(0, 0, "pool.ntp.org", "time.nist.gov");
-
   struct tm timeinfo;
   while (!getLocalTime(&timeinfo)) {
     Serial.println("Oczekiwanie na synchronizacje czasu...");
     delay(500);
   }
-
   Serial.println("Czas zsynchronizowany."); 
 
   
   connectMQTT();
 }
 
-long long getTimestampMs() {
-  struct timeval tv;
-  gettimeofday(&tv, NULL);
-  return ((long long)tv.tv_sec * 1000LL) + (tv.tv_usec / 1000);
-}
+
 
 
 void loop() {
