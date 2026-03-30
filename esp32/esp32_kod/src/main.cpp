@@ -5,12 +5,12 @@
 #include "secrets.h"
 #include <time.h>
 #include <sys/time.h>
-#include <DHT.h>
+//#include <DHT.h>
 
-#define DHTPIN 4
-#define DHTTYPE DHT11
+//#define DHTPIN 4
+//#define DHTTYPE DHT11
 
-DHT dht(DHTPIN, DHTTYPE);
+//DHT dht(DHTPIN, DHTTYPE);
 
 WiFiClient espClient;
 PubSubClient mqttClient(espClient);
@@ -67,7 +67,8 @@ void connectMQTT() {
 
 void publishMeasurement() 
 {
-  float  temperature = dht.readTemperature();
+//  float  temperature = dht.readTemperature();
+  float temperature = temperatureRead();
   
   if(isnan(temperature))  {
     Serial.println("Błąd odczytu temp.");
@@ -75,24 +76,19 @@ void publishMeasurement()
   }
 
   StaticJsonDocument<256> doc;
-
   doc["schema_version"] = 1;
   doc["group_id"] = MQTT_GROUP;
   doc["device_id"] = deviceId;
   doc["sensor"] = "temperature";
   doc["value"] = temperature;
   doc["unit"] = "C";
-  doc["ts_ms"] = getTimestampMS();
-
+  doc["ts_ms"] = getTimestampMs();
 
   char payload[256];
   serializeJson(doc, payload);
-
-  mqttClient.publish(topic.c_str(), payload);
-
+//  mqttClient.publish(topic.c_str(), payload);
   if (mqttClient.publish(topic.c_str(), payload)) {
-    Serial.print("Wysłano dane: ");
-    Serial.println(payload);
+    Serial.print("Temperatura: ", temperature);
   } else {
     Serial.println("Błąd publikacji MQTT");
   }
@@ -103,7 +99,7 @@ void setup()
   Serial.begin(115200);
   delay(1000);
 
-  dht.begin();
+//  dht.begin();
 
   deviceId = generateDeviceIdFromEfuse();
   topic = "lab/" + String(MQTT_GROUP) + "/" + deviceId + "/temperature";
