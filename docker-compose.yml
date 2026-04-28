@@ -15,7 +15,7 @@ services:
       context: ./broker
       dockerfile: Dockerfile
     ports: 
-      - 1883:1883
+      - 1884:1883
     image: broker:v1
     container_name: broker
   
