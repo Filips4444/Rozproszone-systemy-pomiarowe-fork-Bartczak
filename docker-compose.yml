@@ -7,6 +7,7 @@ services:
       - 5001:5001
     volumes:
       - ./api:/app
+      - ./db.py:/app/db.py  # Dodaj to również tutaj, jeśli api też go używa
     image: api:v1
     container_name: api
   
@@ -15,7 +16,7 @@ services:
       context: ./broker
       dockerfile: Dockerfile
     ports: 
-      - 1884:1883
+      - 1883:1883
     image: broker:v1
     container_name: broker
   
@@ -28,7 +29,6 @@ services:
     image: database:v1
     container_name: postgres
 
-
   ingestor:
     build:
       context: ./ingestor
@@ -37,3 +37,7 @@ services:
     depends_on:
       - broker
       - database
+    volumes:
+      - ./ingestor:/app
+      - ./db.py:/app/db.py  # KLUCZOWA LINIA: mapuje plik z głównego katalogu do kontenera
+    working_dir: /app
