@@ -13,7 +13,7 @@ lab/<group_id>/<device_id>/<sensor>
 | Segment      | Opis                          | Przyklad             |
 |--------------|-------------------------------|----------------------|
 | `lab`        | Glowny obszar projektu        | `lab`                |
-| `group_id`   | Identyfikator grupy lab.      | `g02`                |
+| `group_id`   | Identyfikator grupy lab.      | `g03`                |
 | `device_id`  | Identyfikator urzadzenia      | `esp32-AB12CD34`     |
 | `sensor`     | Rodzaj danych / typ sensora   | `temperature`        |
 
@@ -59,7 +59,7 @@ lab/<group_id>/<device_id>/status
 ```json
 {
   "schema_version": 1,
-  "group_id": "g02",
+  "group_id": "g03",
   "device_id": "esp32-AB12CD34",
   "sensor": "temperature",
   "value": 24.5,
