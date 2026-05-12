@@ -7,7 +7,6 @@ services:
       - 5001:5001
     volumes:
       - ./api:/app
-      - ./db.py:/app/db.py  # Dodaj to również tutaj, jeśli api też go używa
     image: api:v1
     container_name: api
   
@@ -39,5 +38,4 @@ services:
       - database
     volumes:
       - ./ingestor:/app
-      - ./db.py:/app/db.py  # KLUCZOWA LINIA: mapuje plik z głównego katalogu do kontenera
     working_dir: /app
