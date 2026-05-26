@@ -11,6 +11,7 @@ PubSubClient mqttClient(espClient);
 String deviceId;
 String topic;
 unsigned long seqCounter = 0;
+
 String generateDeviceIdFromEfuse() 
 {
   uint64_t chipId = ESP.getEfuseMac();
