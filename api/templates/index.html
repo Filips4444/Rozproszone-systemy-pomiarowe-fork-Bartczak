@@ -3,56 +3,127 @@
 <head>
     <meta charset="UTF-8">
     <title>Panel Pomiarowy ESP32</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f9; }
-        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); max-width: 400px;}
-        h1 { color: #333; }
-        .data-label { font-weight: bold; color: #666; }
-        .data-value { font-size: 1.2em; color: #0056b3; margin-bottom: 10px; display: block;}
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); max-width: 800px; margin: auto;}
+        h1 { color: #333; text-align: center; }
+        .btn { background-color: #007bff; color: white; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; display: block; margin: 10px auto; }
+        .btn:hover { background-color: #0056b3; }
+        .alert { background-color: #fff3cd; color: #856404; padding: 10px; border-radius: 5px; text-align: center; margin-bottom: 15px; display: none; }
     </style>
 </head>
 <body>
 
     <div class="card">
-        <h1>Ostatni Pomiar</h1>
-        <button onclick="pobierzDane()">Odśwież pomiar</button>
+        <h1>Historia Pomiarów</h1>
+        
+        <div id="mock-alert" class="alert">
+            <strong>Uwaga:</strong> Brak danych w bazie. Wyświetlam dane testowe (mock).
+        </div>
+
+        <button class="btn" onclick="pobierzDane()">Odśwież pomiary</button>
         <hr>
-        <span class="data-label">Sensor:</span>
-        <span class="data-value" id="sensor-id">Oczekiwanie na dane...</span>
         
-        <span class="data-label">Wartość:</span>
-        <span class="data-value" id="sensor-value">--</span>
-        
-        <span class="data-label">Czas:</span>
-        <span class="data-value" id="sensor-time">--</span>
+        <canvas id="wykresPomiarow"></canvas>
     </div>
 
     <script>
+        let mojWykres = null;
+
+        // Funkcja rysująca wykres
+        function rysujWykres(daneZApi) {
+            const ctx = document.getElementById('wykresPomiarow').getContext('2d');
+
+            // API zwraca dane malejąco (najnowsze na początku). 
+            // Do wykresu odwracamy tablicę, żeby czas płynął od lewej do prawej.
+            const daneOdwrocone = daneZApi.reverse();
+            
+            // Wyciągamy czas i wartości do osobnych tablic
+            const etykiety = daneOdwrocone.map(pomiar => {
+                let data = new Date(pomiar.ts_ms);
+                return data.toLocaleTimeString(); 
+            });
+            const wartosci = daneOdwrocone.map(pomiar => pomiar.value);
+
+            // Jeśli na ekranie jest już stary wykres, usuwamy go przed narysowaniem nowego
+            if (mojWykres) {
+                mojWykres.destroy();
+            }
+
+            // Tworzymy nowy wykres
+            mojWykres = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: etykiety,
+                    datasets: [{
+                        label: 'Wartość czujnika',
+                        data: wartosci,
+                        borderColor: '#28a745',
+                        backgroundColor: 'rgba(40, 167, 69, 0.2)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.3 // Lekkie wygładzenie krzywej
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: { 
+                            beginAtZero: false // Wykres dopasuje oś Y do realnych odczytów
+                        }
+                    }
+                }
+            });
+        }
+
+        // Główna funkcja pobierająca dane
         function pobierzDane() {
-            // Skrypt odpytuje Twoje własne REST API
-            fetch('/measurements/latest')
+            // Tym razem odpytujemy endpoint, który zwraca listę 20 pomiarów, a nie tylko jeden
+            fetch('/measurements')
                 .then(response => {
                     if (!response.ok) {
-                        throw new Error("Błąd pobierania danych");
+                        throw new Error("Brak odpowiedzi API lub błąd bazy");
                     }
                     return response.json();
                 })
                 .then(data => {
-                    // Podmiana zawartości na stronie na podstawie JSONa z bazy
-                    document.getElementById('sensor-id').innerText = data.device_id + " (" + data.sensor + ")";
-                    document.getElementById('sensor-value').innerText = data.value + " " + data.unit;
-                    
-                    // Formatowanie czasu z UNIX timestamp (jeśli ts_ms jest w milisekundach)
-                    let date = new Date(data.ts_ms);
-                    document.getElementById('sensor-time').innerText = date.toLocaleString();
+                    if (data.length === 0) {
+                        // Baza działa, ale jest pusta
+                        uruchomDaneTestowe();
+                    } else {
+                        // Wszystko działa poprawnie, mamy dane od kolegi z zespołu!
+                        document.getElementById('mock-alert').style.display = 'none';
+                        rysujWykres(data);
+                    }
                 })
                 .catch(error => {
-                    console.error('Błąd:', error);
-                    document.getElementById('sensor-value').innerText = "Błąd połączenia z API";
+                    // API leży lub rzuca błędami - odpalamy zaślepkę
+                    console.warn('Wykryto problem z API, ładuję zaślepkę. Błąd:', error);
+                    uruchomDaneTestowe();
                 });
         }
 
-        // Pobranie danych automatycznie po załadowaniu strony
+        // Funkcja generująca sztuczne dane
+        function uruchomDaneTestowe() {
+            document.getElementById('mock-alert').style.display = 'block';
+            
+            const teraz = Date.now();
+            const mockData = [
+                { value: 21.2, ts_ms: teraz - 60000 },
+                { value: 21.5, ts_ms: teraz - 50000 },
+                { value: 22.1, ts_ms: teraz - 40000 },
+                { value: 22.8, ts_ms: teraz - 30000 },
+                { value: 22.4, ts_ms: teraz - 20000 },
+                { value: 22.0, ts_ms: teraz - 10000 },
+                { value: 21.9, ts_ms: teraz }
+            ];
+            
+            // Wysyłamy sztuczne dane do tej samej funkcji, która rysuje te prawdziwe
+            rysujWykres(mockData);
+        }
+
+        // Uruchomienie pobierania przy starcie strony
         window.onload = pobierzDane;
     </script>
 </body>
