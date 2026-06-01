@@ -55,13 +55,12 @@ def hello_world():
 
 @app.route("/health", methods=["GET"])
 def health():
-    return jsonify({"status": "ok"})
+    return jsonify({"status": 1})
 
 @app.route("/measurements")
 def get_measurements():
     conn = get_connection()
     cur = conn.cursor()
-    # Usunięto zbędną liczbę 10 ze środka zapytania
     cur.execute("""
         SELECT id, group_id, device_id, sensor, value, unit, ts_ms, seq, topic
         FROM measurements
