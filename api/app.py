@@ -163,6 +163,7 @@ def get_measurement_history():
             "seq": row[7],
             "topic": row[8]
         })
+    return jsonify(result)
 
 
 @app.route("/dashboard", methods=["GET"])
