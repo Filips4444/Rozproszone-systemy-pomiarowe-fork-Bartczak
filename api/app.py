@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request, render_template
 from db import get_connection
 
 app = Flask(__name__)
@@ -163,6 +163,11 @@ def get_measurement_history():
             "seq": row[7],
             "topic": row[8]
         })
+
+
+@app.route("/dashboard", methods=["GET"])
+def dashboard():
+    return render_template("index.html")
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5001)
