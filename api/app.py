@@ -41,6 +41,8 @@ def hello_world():
             
             <a href="/measurements" class="nav-link">Pokaż pomiary (JSON)</a>
             <a href="/health" class="nav-link" style="background-color: #28a745;">Sprawdź Healthcheck</a>
+	    <a href="/measurements/latest" class="nav-link">Ostatni pomiar (JSON)</a>
+	    <a href="/measurements/history" class="nav-link">Historia pomiarów (JSON)</a>
 
             <hr>
             <h3>Dokumentacja API:</h3>
