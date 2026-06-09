@@ -33,6 +33,8 @@ services:
       context: ./ingestor
       dockerfile: Dockerfile
     container_name: ingestor
+    environment:
+      - PYTHONUNBUFFERED=1
     depends_on:
       - broker
       - database

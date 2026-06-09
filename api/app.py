@@ -13,20 +13,33 @@ def hello_world():
         <title>Panel Sterowania API</title>
         <style>
             body { font-family: sans-serif; line-height: 1.6; margin: 40px; background-color: #f4f4f9; }
-            .container { max-width: 800px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-            h1 { color: #333; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+            .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+            h1 { color: #333; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 0; }
+            .button-group { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; margin-top: 15px; }
+            
             .nav-link { 
-                display: inline-block; 
-                margin-right: 15px; 
-                padding: 10px 20px; 
+                flex: 1 1 calc(50% - 15px);
+                box-sizing: border-box;
+                text-align: center;
+                padding: 12px 20px; 
                 background-color: #007bff; 
                 color: white; 
                 text-decoration: none; 
-                border-radius: 5px; 
+                border-radius: 5px;
+                font-weight: bold;
+                transition: background-color 0.3s, transform 0.1s;
             }
-            .nav-link:hover { background-color: #0056b3; }
-            .info-box { background: #e7f3ff; border-left: 5px solid #2196F3; padding: 10px; margin: 20px 0; }
-            code { background: #eee; padding: 2px 5px; }
+            .nav-link:hover { background-color: #0056b3; transform: translateY(-2px); }
+            
+            
+            .nav-link.gui-btn { background-color: #17a2b8; }
+            .nav-link.gui-btn:hover { background-color: #117a8b; }
+            .nav-link.health-btn { background-color: #28a745; }
+            .nav-link.health-btn:hover { background-color: #1e7e34; }
+            
+            .info-box { background: #e7f3ff; border-left: 5px solid #2196F3; padding: 15px; margin: 20px 0; border-radius: 4px; }
+            code { background: #eee; padding: 3px 6px; border-radius: 4px; font-family: monospace; }
+            ul { line-height: 1.8; }
         </style>
     </head>
     <body>
@@ -36,25 +49,30 @@ def hello_world():
                 <strong>Status systemu:</strong> Serwer działa poprawnie na porcie 5001.
             </div>
             
-            <h3>Dostępne opcje:</h3>
-            <p>Wybierz jedną z poniższych sekcji, aby zarządzać danymi:</p>
+            <h3>Dostępne interfejsy i endpointy:</h3>
+            <p>Wybierz jedną z poniższych opcji, aby przejść do danych:</p>
             
-            <a href="/measurements" class="nav-link">Pokaż pomiary (JSON)</a>
-            <a href="/health" class="nav-link" style="background-color: #28a745;">Sprawdź Healthcheck</a>
-	    <a href="/measurements/latest" class="nav-link">Ostatni pomiar (JSON)</a>
-	    <a href="/measurements/history" class="nav-link">Historia pomiarów (JSON)</a>
+            <div class="button-group">
+                <a href="/dashboard" class="nav-link gui-btn">Wizualizacja Danych (GUI)</a>
+                <a href="/measurements" class="nav-link">Ostatnie 20 pomiarów (JSON)</a>
+                <a href="/measurements/latest" class="nav-link">Najnowszy pomiar (JSON)</a>
+                <a href="/measurements/history" class="nav-link">Historia z filtrowaniem (JSON)</a>
+                <a href="/health" class="nav-link health-btn">Sprawdź Healthcheck</a>
+            </div>
 
             <hr>
             <h3>Dokumentacja API:</h3>
             <ul>
+                <li><code>GET /dashboard</code> - Zwraca interfejs graficzny (wykresy HTML/JS).</li>
                 <li><code>GET /measurements</code> - Pobiera 20 najnowszych rekordów z bazy danych.</li>
-                <li><code>GET /health</code> - Zwraca status 200 OK w formacie JSON.</li>
+                <li><code>GET /measurements/latest</code> - Zwraca pojedynczy, najnowszy rekord.</li>
+                <li><code>GET /measurements/history</code> - Zwraca historię pomiarów. Obsługuje parametry URL np.: <code>?device_id=esp32&sensor=temp&limit=10</code></li>
+                <li><code>GET /health</code> - Zwraca status działania aplikacji w formacie JSON.</li>
             </ul>
         </div>
     </body>
     </html>
     """
-
 @app.route("/health", methods=["GET"])
 def health():
     return jsonify({"status": 1})
