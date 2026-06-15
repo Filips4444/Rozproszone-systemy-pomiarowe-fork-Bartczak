@@ -39,16 +39,19 @@ def hello_world():
             <h3>Dostępne opcje:</h3>
             <p>Wybierz jedną z poniższych sekcji, aby zarządzać danymi:</p>
             
-            <a href="/measurements" class="nav-link">Pokaż pomiary (JSON)</a>
-            <a href="/health" class="nav-link" style="background-color: #28a745;">Sprawdź Healthcheck</a>
-	    <a href="/measurements/latest" class="nav-link">Ostatni pomiar (JSON)</a>
-	    <a href="/measurements/history" class="nav-link">Historia pomiarów (JSON)</a>
+            <a href="/measurements" class="nav-link">/measurements</a>
+            <a href="/health" class="nav-link">Sprawdź Healthcheck</a>
+	    <a href="/measurements/latest" class="nav-link">/latest</a>
+	    <a href="/measurements/history" class="nav-link">/history</a>
+        <a href="/dashboard" class="nav-link" style="background-color: #28a745;">Zobacz wykres</a>
 
             <hr>
             <h3>Dokumentacja API:</h3>
             <ul>
                 <li><code>GET /measurements</code> - Pobiera 20 najnowszych rekordów z bazy danych.</li>
-                <li><code>GET /health</code> - Zwraca status 200 OK w formacie JSON.</li>
+                <li><code>GET /health</code> - Zwraca status OK w formacie JSON.</li>
+                <li><code>GET /latest</code> - Zwraca ostatni pomiar w formacie JSON.</li>
+                <li><code>GET /dashboard</code> - (Zobacz wykres) Włącza warstwe prezentacyjną z wykresem wartości.</li>
             </ul>
         </div>
     </body>
@@ -57,7 +60,7 @@ def hello_world():
 
 @app.route("/health", methods=["GET"])
 def health():
-    return jsonify({"status": 1})
+    return jsonify({"status": "OK"})
 
 @app.route("/measurements")
 def get_measurements():

@@ -4,7 +4,7 @@ from db import get_connection
 
 MQTT_HOST = "broker"
 MQTT_PORT = 1883
-MQTT_TOPIC = "lab/g03/+/+"
+MQTT_TOPIC = "lab/+/+/+"
 
 
 def is_valid(data):
