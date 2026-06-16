@@ -2,12 +2,12 @@
 
 ### 1. Architektura i Stos Technologiczny
 System realizuje kompletny przepływ danych (end-to-end) od fizycznego pomiaru, aż po analizę i wizualizację.
-* **Urządzenia brzegowe:** Mikrokontrolery ESP32 programowane z wykorzystaniem środowiska PlatformIO (framework Arduino).
-* **Warstwa komunikacyjna (Docker):** Broker MQTT (Mosquitto) pełniący rolę centralnej magistrali danych.
+* **Urządzenia brzegowe:** Mikrokontrolery ESP32 programowane z wykorzystaniem środowiska PlatformIO.
+* **Warstwa komunikacyjna (Docker):** Broker MQTT pełniący rolę centralnej magistrali danych.
 * **Backend (Docker):** * **Ingestor:** Skrypt napisany w języku Python odpowiadający za odbiór wiadomości MQTT, ich walidację i przekazywanie do bazy.
     * **Baza Danych:** Relacyjna baza PostgreSQL przechowująca metadane urządzeń oraz historię pomiarów.
     * **REST API:** Aplikacja w frameworku Flask udostępniająca dane klientom.
-* **Klient i Wizualizacja:** Środowisko LabVIEW pobierające paczki danych z endpointów REST.
+* **Klient i Wizualizacja:** Wizualizacja danych wykonana za pomocą aplikacji przeglądarkowej.
 
 ### 2. Przepływ Danych (End-to-End)
 1. ESP32 generuje unikalny identyfikator na podstawie fizycznych adresów układu (eFuse/MAC) i łączy się z siecią Wi-Fi.
@@ -50,10 +50,11 @@ Każda wiadomość przesyłana z czujnika musi bezwzględnie zawierać następuj
 * `/measurements` - Zwraca listę 20 ostatnich pomiarów w systemie.
 * `/measurements/latest` - Zwraca pojedynczy, najnowszy odnotowany pomiar.
 * `/measurements/history` - Umożliwia filtrowanie wyników z bazy poprzez parametry URL, takie jak `device_id`, `sensor` oraz `limit`.
+* `/dashboard` - Prezentuje pomiary z bazy danych w postaci wykresu (warstwa prezentacyjna)
 
 ### 5. Bezpieczeństwo i Niezawodność
 * **Bezpieczeństwo Sieciowe:** Konfiguracja w pliku `docker-compose.yml` izoluje usługi w dedykowanej sieci wewnętrznej (`bridge`), likwidując publiczną ekspozycję kontenerów oraz bazy danych. Broker MQTT nasłuchuje na standardowym, wewnętrznym porcie 1883.
-* **Monitorowanie Sieci:** W kodzie C++ (PlatformIO) zaimplementowano funkcje non-blocking (bez wywoływania długich opóźnień) do wznawiania utraconych sesji Wi-Fi i MQTT.
+* **Monitorowanie Sieci:** W kodzie C++ (PlatformIO) zaimplementowano funkcje non-blocking do wznawiania utraconych sesji Wi-Fi i MQTT.
 * **Raportowanie Awarii:** Wdrożono wzorzec *Last Will and Testament (LWT)*, dzięki któremu broker samoistnie opublikuje flagę statutu `offline`, w sytuacji nagłego zaniku zasilania lub komunikacji ESP32.
 
 ---
