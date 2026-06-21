@@ -59,7 +59,13 @@ Każda wiadomość przesyłana z czujnika musi bezwzględnie zawierać następuj
 
 ---
 
-### Znane Problemy w Działaniu (Stan Obecny)
+### 6. Znane Problemy w Działaniu
 **Brak komunikacji pomiędzy Brokerem MQTT a bazą PostgreSQL.**
 * **Opis defektu:** Dane z ESP32 prawidłowo trafiają do brokera MQTT, jednak nie następuje ich zapis do odpowiednich tabel bazy PostgreSQL.
 * **Prawdopodobna przyczyna:** Głównym obszarem problemowym jest kontener **Ingestora**. Należy poddać weryfikacji skrypt Pythona odpowiedzialny za działanie tego serwisu. Wąskim gardłem może być niepoprawna definicja subskrybowanego tematu w funkcji wywoławczej `on_connect`, zbyt rygorystyczne reguły odrzucania wiadomości JSON podczas walidacji w funkcji `on_message` lub nieautoryzowana komunikacja (błędy uwierzytelniania) podczas łączenia się Ingestora z bazą PostgreSQL przez skrypt `db.py`.
+**Brak sygnalizacji utraty połączenia z urządzeniem:**
+* **Opis defektu:** W momencie, gdy połączenie z mikrokontrolerem ESP32 zostanie przerwane, system nie generuje ani nie wyświetla żadnego komunikatu informującego o tym, że urządzenie znajduje się w stanie offline. Mimo obecności mechanizmu LWT na poziomie brokera, informacja ta nie trafia do warstwy prezentacyjnej.
+**Generowanie danych pomiarowych:**
+* **Opis defektu:** Płytka pomiarowa nie wykonuje w tym momencie rzeczywistych odczytów z fizycznych sensorów. Przesyłane pakiety danych zawierają wartości liczbowe ustawione na sztywno bezpośrednio w kodzie źródłowym oprogramowania.
+**Decoupling warstwy prezentacyjnej:**
+* Aktualnie wykresy pomiarów prezentowane są bezpośrednio z poziomu aplikacji Flask (/dashboard). W celu separacji, powłoka prezentacyjna powinna zostać całkowicie oddzielona w formie autonomicznej aplikacji webowej. Backend będzie pełnił wówczas rolę bezstanowego REST API dostarczającego dane w formacie JSON.
